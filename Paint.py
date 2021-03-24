@@ -50,6 +50,13 @@ class MainWindow(Tk):
         self.canvas = Canvas(self, bg="white")
         self.canvas.place(x=0, y=100, relwidth=1.0, relheight=0.896)
 
+        self.menu = Menu(self)
+        self.insert_menu = Menu(self.menu)
+        self.insert_menu.add_command(label="Picture..", accelerator="Command+I")
+        self.menu.add_cascade(menu=self.insert_menu, label="Insert")
+
+        self.config(menu=self.menu)
+
         self.canvas.bind("<ButtonRelease-1>", self.release)
         self.canvas.bind("<Button-1>", self.draw_down)
         self.canvas.bind("<B1-Motion>", self.drag)
@@ -210,7 +217,6 @@ class MainWindow(Tk):
 
     def select(self, obj):
         if not self.selected:
-            self.canvas.config(cursor="sizing")
             self.selected = True
             self.selected_obj = obj
     
@@ -225,7 +231,6 @@ class MainWindow(Tk):
 
     def draw_down(self, event):
         if self.eraser_var.get() == 0 and not self.selected:
-            self.canvas.config(cursor="sizing")
             if self.def_drawings.get() == "Rect":
                 self.first_x = event.x
                 self.first_y = event.y
@@ -242,7 +247,6 @@ class MainWindow(Tk):
     def draw_up(self, event):
         try:
             if not self.selected and self.eraser_var.get() == 0:
-                self.canvas.config(cursor="arrow")
                 if self.def_drawings.get() == "Rect":
                     self.draw_rect(event)
 
@@ -381,7 +385,6 @@ class MainWindow(Tk):
         else:
             self.draw_up(event)
         if self.selected:
-            self.canvas.config(cursor="arrow")
             self.selected = False
             self.selected_obj = None
             self.point_x, self.point_y = None, None
