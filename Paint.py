@@ -16,7 +16,7 @@ class MainWindow(Tk):
     selected = False
     selected_obj = None
     fill = None
-    handle_const = 5
+    handle_const = 15
     doted = False
     event = None
 
@@ -51,9 +51,6 @@ class MainWindow(Tk):
         self.canvas.place(x=0, y=100, relwidth=1.0, relheight=0.896)
 
         self.menu = Menu(self)
-        self.insert_menu = Menu(self.menu)
-        self.insert_menu.add_command(label="Picture..", accelerator="Command+I", command=self.insert_pic)
-        self.menu.add_cascade(menu=self.insert_menu, label="Insert")
 
         self.config(menu=self.menu)
 
@@ -62,16 +59,6 @@ class MainWindow(Tk):
         self.canvas.bind("<B1-Motion>", self.drag)
         self.canvas.bind("<Double-Button-1>", self.delete_obj)
         #self.bind("<Command-s>", self.getter)
-
-    def insert_pic(self):
-        file_path = filedialog.askopenfilename(title="Select Picture", filetypes=(("JPEG", "*.jpg"), ("PNG", "*.png"), ("All Files", "*.")))
-        if not file_path:
-            return
-        print(file_path)
-        path = "IMG_0327.jpeg"
-        image = ImageTk.PhotoImage(Image.open(path))
-
-        self.canvas.create_image(0, 0, image=image, anchor=NE)
 
     def setup_toolbar_items(self):
         self.lbl_width = Label(self.toolbar, text="Line Width: ")
@@ -152,11 +139,11 @@ class MainWindow(Tk):
         if shape == "oval":
             self.side_resize(sel_rect, right_mid_y, event, top_mid_x)
         else:
-            self.not_oval_resize(sel_rect, len_, event, top_mid_x, right_mid_y)
+            self.corner_resize(sel_rect, len_, event, top_mid_x, right_mid_y)
 
         print(self.objects)
 
-    def not_oval_resize(self, sel_rect, len, event, top_mid_x, right_mid_y):
+    def corner_resize(self, sel_rect, len, event, top_mid_x, right_mid_y):
         if abs(self.point_x - sel_rect[2]) < len and abs(self.point_y - sel_rect[3]) < len:
             print("Yes")
             self.objects.pop(self.objects.index(sel_rect))
@@ -182,54 +169,33 @@ class MainWindow(Tk):
             self.objects.append([sel_rect[0], sel_rect[1], event.x, sel_rect[3], sel_rect[4], event.y, sel_rect[6], sel_rect[7], sel_rect[4], sel_rect[3], event.x, event.y])
             self.point_x, self.point_y = event.x, event.y
 
-        elif abs(self.point_x - sel_rect[4]) < 100 and abs(self.point_y - right_mid_y) < 100:
-            self.objects.pop(self.objects.index(sel_rect))
-            self.canvas.coords(self.selected_obj, event.x, sel_rect[5], sel_rect[2], sel_rect[3])
-            self.objects.append([sel_rect[0], sel_rect[1], sel_rect[2], sel_rect[3], event.x, sel_rect[5], sel_rect[6], sel_rect[7], event.x, sel_rect[9], sel_rect[10], sel_rect[11]])
-            self.point_x, self.point_y = event.x, right_mid_y
-
-        elif abs(self.point_x - sel_rect[2]) < 100 and abs(self.point_y - right_mid_y) < 100:
-            self.objects.pop(self.objects.index(sel_rect))
-            self.canvas.coords(self.selected_obj, sel_rect[8], sel_rect[5], event.x, sel_rect[3])
-            self.objects.append([sel_rect[0], sel_rect[1], event.x, sel_rect[3], sel_rect[4], sel_rect[5], sel_rect[6], sel_rect[7], sel_rect[8], sel_rect[9], event.x, sel_rect[11]])
-            self.point_x, self.point_y = event.x, right_mid_y
-
-        elif abs(self.point_x - top_mid_x) < 100 and abs(self.point_y - sel_rect[3]) < 100:
-            self.objects.pop(self.objects.index(sel_rect))
-            self.canvas.coords(self.selected_obj, sel_rect[4], sel_rect[5], sel_rect[2], event.y)
-            self.objects.append([sel_rect[0], sel_rect[1], sel_rect[2], event.y, sel_rect[4], sel_rect[5], sel_rect[6], sel_rect[7], sel_rect[8], event.y, sel_rect[10], sel_rect[11]])
-            self.point_x, self.point_y = top_mid_x, event.y
-
-        elif abs(self.point_x - top_mid_x) < 100 and abs(self.point_y - sel_rect[11]) < 100:
-            self.objects.pop(self.objects.index(sel_rect))
-            self.canvas.coords(self.selected_obj, sel_rect[4], event.y, sel_rect[2], sel_rect[3])
-            self.objects.append([sel_rect[0], sel_rect[1], sel_rect[2], sel_rect[3], sel_rect[4], event.y, sel_rect[6], sel_rect[7], sel_rect[8], sel_rect[9], sel_rect[10], event.y])
-            self.point_x, self.point_y = top_mid_x, event.y
+        else:
+            self.side_resize(sel_rect, right_mid_y, event, top_mid_x)
 
     def side_resize(self, sel_rect, right_mid_y, event, top_mid_x):
-        if abs(self.point_x - sel_rect[4]) < 100 and abs(self.point_y - right_mid_y) < 100:
+        if abs(self.point_x - sel_rect[4]) < self.handle_const and abs(self.point_y - right_mid_y) < self.handle_const:
             self.objects.pop(self.objects.index(sel_rect))
             self.canvas.coords(self.selected_obj, event.x, sel_rect[5], sel_rect[2], sel_rect[3])
             self.objects.append([sel_rect[0], sel_rect[1], sel_rect[2], sel_rect[3], event.x, sel_rect[5], sel_rect[6], sel_rect[7], event.x, sel_rect[9], sel_rect[10], sel_rect[11]])
-            self.point_x, self.point_y = event.x, event.y
+            self.point_x, self.point_y = event.x, right_mid_y
 
-        elif abs(self.point_x - sel_rect[2]) < 100 and abs(self.point_y - right_mid_y) < 100:
+        elif abs(self.point_x - sel_rect[2]) < self.handle_const and abs(self.point_y - right_mid_y) < self.handle_const:
             self.objects.pop(self.objects.index(sel_rect))
             self.canvas.coords(self.selected_obj, sel_rect[8], sel_rect[5], event.x, sel_rect[3])
             self.objects.append([sel_rect[0], sel_rect[1], event.x, sel_rect[3], sel_rect[4], sel_rect[5], sel_rect[6], sel_rect[7], sel_rect[8], sel_rect[9], event.x, sel_rect[11]])
-            self.point_x, self.point_y = event.x, event.y
+            self.point_x, self.point_y = event.x, right_mid_y
 
-        elif abs(self.point_x - top_mid_x) < 100 and abs(self.point_y - sel_rect[3]) < 100:
+        elif abs(self.point_x - top_mid_x) < self.handle_const and abs(self.point_y - sel_rect[3]) < self.handle_const:
             self.objects.pop(self.objects.index(sel_rect))
             self.canvas.coords(self.selected_obj, sel_rect[4], sel_rect[5], sel_rect[2], event.y)
             self.objects.append([sel_rect[0], sel_rect[1], sel_rect[2], event.y, sel_rect[4], sel_rect[5], sel_rect[6], sel_rect[7], sel_rect[8], event.y, sel_rect[10], sel_rect[11]])
-            self.point_x, self.point_y = event.x, event.y
+            self.point_x, self.point_y = top_mid_x, event.y
 
-        elif abs(self.point_x - top_mid_x) < 100 and abs(self.point_y - sel_rect[11]) < 100:
+        elif abs(self.point_x - top_mid_x) < self.handle_const and abs(self.point_y - sel_rect[11]) < self.handle_const:
             self.objects.pop(self.objects.index(sel_rect))
             self.canvas.coords(self.selected_obj, sel_rect[4], event.y, sel_rect[2], sel_rect[3])
             self.objects.append([sel_rect[0], sel_rect[1], sel_rect[2], sel_rect[3], sel_rect[4], event.y, sel_rect[6], sel_rect[7], sel_rect[8], sel_rect[9], sel_rect[10], event.y])
-            self.point_x, self.point_y = event.x, event.y
+            self.point_x, self.point_y = top_mid_x, event.y
 
     def select(self, obj):
         if not self.selected:

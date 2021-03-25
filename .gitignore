@@ -1,3 +1,9 @@
 venv/
 .vscode/
 .ropeproject/
+*.jpg
+*.jpeg
+*.JPEG
+*.png
+*.ppm
+*.gif
